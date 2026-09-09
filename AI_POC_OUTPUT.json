@@ -1,0 +1,21 @@
+{
+    "timestamp": "2026-09-09 13:22:55.075777",
+    "steps": [
+        "home_opened",
+        "login_success",
+        "item_added",
+        "form_filled",
+        "submitted"
+    ],
+    "ai_reasoning_steps": [
+        "AI: Login flow worked correctly.",
+        "AI: Form fields were populated correctly.",
+        "AI: Form submission reached the next page."
+    ],
+    "page_ai_analysis": {
+        "page": "LoginPage",
+        "ai_reasoning": "AI inspected HTML and believes the page 'LoginPage' loaded successfully.",
+        "confidence": "0.97"
+    },
+    "final_ai_summary": "AI Summary of Automation Run:\n- Total Steps: 5\n- Page Analysis Confidence: 0.97\n- Key Events: home_opened, login_success, item_added, form_filled, submitted\n- Overall: The automation flow executed successfully and appears stable.\n"
+}
