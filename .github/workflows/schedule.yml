@@ -2,8 +2,8 @@ name: AI POC Scheduled Run (Every 10 Minutes)
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # Runs every 10 minutes
-  workflow_dispatch:          # Manual trigger button
+    - cron: "*/10 * * * *"     # Runs every 10 minutes
+  workflow_dispatch:            # Allows manual trigger
 
 jobs:
   run-ai-poc:
@@ -26,18 +26,23 @@ jobs:
         run: |
           python aiPoc.py
 
-      - name: Upload JSON output
+      - name: Upload JSON output as artifact
         uses: actions/upload-artifact@v3
         with:
           name: AI_POC_OUTPUT
           path: AI_POC_OUTPUT.json
 
-      - name: Commit updated JSON back to repo
+      - name: Commit updated JSON back to repository
         run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          # Add JSON only if changed
           git add AI_POC_OUTPUT.json
-          git commit -m "Updated AI_POC_OUTPUT.json"
+
+          # Prevent error if nothing changed
+          git diff --cached --quiet || git commit -m "Updated AI_POC_OUTPUT.json"
+          
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
