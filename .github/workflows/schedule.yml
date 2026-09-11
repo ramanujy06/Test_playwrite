@@ -2,8 +2,8 @@ name: AI POC Scheduled Run (Every 10 Minutes)
 
 on:
   schedule:
-    - cron: "*/10 * * * *"     # Runs every 10 minutes
-  workflow_dispatch:            # Allows manual trigger
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
 
 jobs:
   run-ai-poc:
@@ -28,7 +28,6 @@ jobs:
         run: |
           python aiPoc.py
 
-      # ✅ Verify JSON is generated before upload  
       - name: Verify JSON Output Exists
         run: |
           if [ ! -f "AI_POC_OUTPUT.json" ]; then
@@ -49,7 +48,6 @@ jobs:
 
           git add AI_POC_OUTPUT.json
 
-          # Commit only if changed
           git diff --cached --quiet || git commit -m "Updated AI_POC_OUTPUT.json"
 
           git push
