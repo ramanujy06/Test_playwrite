@@ -2,7 +2,7 @@
     "timestamp": "2026-09-09 13:22:55.075777",
     "steps": [
         "home_opened",
-        "login_success",
+        "login_successs",
         "item_added",
         "form_filled",
         "submitted"
