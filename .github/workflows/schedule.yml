@@ -11,7 +11,8 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/upload-artifact@v4
+        uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -25,8 +26,16 @@ jobs:
         run: |
           python aiPoc.py
 
+      # ✅ NEW — Verify the JSON file exists BEFORE upload  
+      - name: Verify JSON Output Exists
+        run: |
+          if [ ! -f "AI_POC_OUTPUT.json" ]; then
+            echo "ERROR: AI_POC_OUTPUT.json was not generated!"
+            exit 1
+          fi
+
       - name: Upload JSON output as artifact
-        uses: actions/upload-artifact@v4        # ✅ FIXED VERSION
+        uses: actions/upload-artifact@v4
         with:
           name: AI_POC_OUTPUT
           path: AI_POC_OUTPUT.json
@@ -41,7 +50,7 @@ jobs:
 
           # Prevent error if nothing changed
           git diff --cached --quiet || git commit -m "Updated AI_POC_OUTPUT.json"
-          
+
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
