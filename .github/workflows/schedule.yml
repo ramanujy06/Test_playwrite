@@ -1,61 +1,89 @@
-name: AI POC Scheduled Run (Every 10 Minutes)
+name: Run AI POC
 
 on:
   schedule:
-    - cron: "*/10 * * * *"      # Runs every 10 minutes
-  workflow_dispatch:             # Allows manual trigger
+    - cron: "*/10 * * * *"     # runs every 10 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write              # allow git push
 
 jobs:
   run-ai-poc:
     runs-on: ubuntu-latest
 
     steps:
+      # --------------------------
+      # CHECKOUT MAIN BRANCH
+      # --------------------------
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          ref: main
 
+      # --------------------------
+      # PYTHON SETUP
+      # --------------------------
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
-      - name: Install dependencies (Python + Playwright)
+      # --------------------------
+      # INSTALL DEPENDENCIES
+      # --------------------------
+      - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install playwright
-          python -m playwright install
 
+      # --------------------------
+      # RUN PLAYWRIGHT AI POC
+      # --------------------------
       - name: Run Playwright AI POC
-        run: |
-          python aiPoc.py
+        run: python ai_poc.py
 
-      # ✅ Verify JSON is generated before upload  
+      # --------------------------
+      # VERIFY OUTPUT EXISTS
+      # --------------------------
       - name: Verify JSON Output Exists
         run: |
-          if [ ! -f "AI_POC_OUTPUT.json" ]; then
-            echo "ERROR: AI_POC_OUTPUT.json was not generated!"
+          if [ ! -f AI_POC_OUTPUT.json ]; then
+            echo "AI_POC_OUTPUT.json not generated!"
             exit 1
           fi
 
+      # --------------------------
+      # UPLOAD ARTIFACT
+      # --------------------------
       - name: Upload JSON output as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: AI_POC_OUTPUT
           path: AI_POC_OUTPUT.json
 
-      # ✅ FIXED: Pull → Rebase → Push (No more rejection)
+      # --------------------------
+      # SAFE DIRECTORY FIX
+      # --------------------------
+      - name: Configure safe git directory
+        run: git config --global --add safe.directory /github/workspace
+
+      # --------------------------
+      # COMMIT & PUSH BACK TO MAIN
+      # --------------------------
       - name: Commit updated JSON back to repository
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-
-          # Pull latest changes first to avoid rejection
-          git pull --rebase origin main
+          git config --global user.name "github-actions"
 
           git add AI_POC_OUTPUT.json
+          git commit -m "Updated AI_POC_OUTPUT.json from GitHub Actions run $(date)" || echo "No changes to commit"
 
-          # Commit only if there are actual changes
-          git diff --cached --quiet || git commit -m "Updated AI_POC_OUTPUT.json"
-
+          git pull origin main --rebase
           git push origin main
+
+      # --------------------------
+      # COMPLETE JOB
+      # --------------------------
+      - name: Complete job
+        run: echo "✅ AI POC flow completed successfully."
