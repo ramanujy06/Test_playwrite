@@ -2,8 +2,8 @@ name: AI POC Scheduled Run (Every 10 Minutes)
 
 on:
   schedule:
-    - cron: "*/10 * * * *"     # Runs every 10 minutes
-  workflow_dispatch:            # Allows manual trigger
+    - cron: "*/10 * * * *"      # Runs every 10 minutes
+  workflow_dispatch:             # Allows manual trigger
 
 jobs:
   run-ai-poc:
@@ -42,16 +42,20 @@ jobs:
           name: AI_POC_OUTPUT
           path: AI_POC_OUTPUT.json
 
+      # ✅ FIXED: Pull → Rebase → Push (No more rejection)
       - name: Commit updated JSON back to repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
 
+          # Pull latest changes first to avoid rejection
+          git pull --rebase origin main
+
           git add AI_POC_OUTPUT.json
 
-          # Commit only if changed
+          # Commit only if there are actual changes
           git diff --cached --quiet || git commit -m "Updated AI_POC_OUTPUT.json"
 
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push origin main
